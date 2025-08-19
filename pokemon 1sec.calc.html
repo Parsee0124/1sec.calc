@@ -7,7 +7,17 @@
     body { font-family: sans-serif; text-align: center; margin: 0; }
     #result { height: 25vh; padding: 10px; background: #f0f0f0; }
     #inputs { margin: 10px; }
-    input { width: 80px; margin: 5px; text-align: right; font-size: 1.2em; }
+    .field {
+      display: inline-block;
+      width: 80px;
+      margin: 5px;
+      padding: 5px;
+      border: 1px solid #999;
+      background: #fff;
+      text-align: right;
+      font-size: 1.2em;
+      min-height: 1.5em;
+    }
     #keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px; height: 75vh; }
     button { font-size: 1.5em; padding: 15px; }
     #options { grid-column: span 3; display: flex; justify-content: space-around; }
@@ -23,10 +33,10 @@
   </div>
 
   <div id="inputs">
-    攻撃: <input id="attack" type="number" readonly>
-    防御: <input id="defense" type="number" readonly><br>
-    HP: <input id="hp" type="number" readonly>
-    威力: <input id="power" type="number" readonly>
+    攻撃: <div id="attack" class="field"></div>
+    防御: <div id="defense" class="field"></div><br>
+    HP: <div id="hp" class="field"></div>
+    威力: <div id="power" class="field"></div>
   </div>
 
   <div id="keypad">
@@ -54,11 +64,11 @@
   </div>
 
   <script>
-    let currentField = "attack"; // 今選択している入力欄
+    let currentField = "attack"; // 今どの欄を編集中か
 
     function appendNumber(num) {
       const field = document.getElementById(currentField);
-      field.value = (field.value || "") + num;
+      field.textContent = (field.textContent || "") + num;
     }
 
     function nextField() {
@@ -68,6 +78,11 @@
       else currentField = "attack";
     }
 
+    function getFieldValue(id) {
+      return parseInt(document.getElementById(id).textContent) || 0;
+    }
+
+    // 五捨五超入 (0.5は切り捨て)
     function roundHalfDown(num) {
       const floor = Math.floor(num);
       if (num - floor > 0.5) return floor + 1;
@@ -75,35 +90,5 @@
     }
 
     function calculate() {
-      const atk = parseInt(document.getElementById("attack").value) || 0;
-      const def = parseInt(document.getElementById("defense").value) || 0;
-      const hp = parseInt(document.getElementById("hp").value) || 1;
-      const power = parseInt(document.getElementById("power").value) || 0;
-
-      let base = Math.floor(Math.floor((Math.floor((2 * 50) / 5 + 2) * power * atk / def) / 50) + 2);
-
-      const stab = document.getElementById("stab").checked ? 1.5 : 1.0;
-      const band = document.getElementById("band").checked ? 1.5 : 1.0;
-      const orb = document.getElementById("orb").checked ? 1.3 : 1.0;
-
-      let damages = [];
-      for (let r = 85; r <= 100; r++) {
-        let dmg = base;
-        dmg = roundHalfDown(dmg * r / 100);
-        dmg = roundHalfDown(dmg * stab);
-        dmg = roundHalfDown(dmg * band);
-        dmg = roundHalfDown(dmg * orb);
-        damages.push(dmg);
-      }
-
-      const min = Math.min(...damages);
-      const max = Math.max(...damages);
-
-      document.getElementById("damage-output").textContent =
-        `最小: ${min} (${Math.floor(min/hp*100)}%) / 最大: ${max} (${Math.floor(max/hp*100)}%)`;
-
-      document.getElementById("damage-range").style.width = `${Math.floor(max/hp*100)}%`;
-    }
-  </script>
-</body>
-</html>
+      const atk = getFieldValue("attack");
+      const def = getFieldValue("defense");
